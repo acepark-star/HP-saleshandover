@@ -382,7 +382,11 @@ function showSaveBadge(msg){
 function setText(id,v){document.getElementById(id).textContent=v;}
 
 // 초기화: Firebase 로드 후 UI 렌더
-loadMemos().then(()=>{ buildButtons(); render(); });
+// UI는 즉시 렌더 (Firebase 연결 여부와 무관)
+buildButtons();
+render();
+// Firebase 메모 로드 완료 후 재렌더
+loadMemos().then(()=>{ render(); }).catch(()=>{ render(); });
 </script>
 </body>
 </html>
