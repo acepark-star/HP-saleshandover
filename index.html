@@ -70,13 +70,19 @@ tbody tr:hover td{background:#fafbff}
 .mp-title{font-size:13px;font-weight:700;color:#1a1a2e;display:flex;justify-content:space-between;align-items:center}
 .mp-close-x{background:none;border:none;font-size:16px;color:#bbb;cursor:pointer;line-height:1;padding:0}
 .mp-close-x:hover{color:#555}
-.mp-textarea{width:100%;padding:8px 10px;border:1.5px solid #d0cdf7;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;outline:none;color:#333;line-height:1.5;min-height:80px;box-sizing:border-box}
+.mp-view-body{font-size:13px;color:#333;line-height:1.6;min-height:60px;white-space:pre-wrap;word-break:break-all;background:#f8f7ff;border-radius:8px;padding:10px 12px}
+.mp-view-empty{font-size:13px;color:#bbb;min-height:60px;background:#f8f7ff;border-radius:8px;padding:10px 12px}
+.mp-textarea{display:none;width:100%;padding:8px 10px;border:1.5px solid #d0cdf7;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;outline:none;color:#333;line-height:1.5;min-height:80px;box-sizing:border-box}
+.mp-textarea.active{display:block}
 .mp-textarea:focus{border-color:#6c63ff}
 .mp-btns{display:flex;gap:8px;justify-content:flex-end}
-.mp-save{padding:6px 16px;border-radius:8px;border:none;background:#6c63ff;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
+.mp-edit-btn{padding:6px 16px;border-radius:8px;border:1px solid #d0cdf7;background:#f5f4ff;color:#6c63ff;font-size:12px;font-weight:600;cursor:pointer}
+.mp-edit-btn:hover{background:#6c63ff;color:#fff}
+.mp-save{display:none;padding:6px 16px;border-radius:8px;border:none;background:#6c63ff;color:#fff;font-size:12px;font-weight:700;cursor:pointer}
+.mp-save.active{display:inline-block}
 .mp-save:hover{background:#5548e0}
-.mp-cancel{padding:6px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#888;font-size:12px;cursor:pointer}
-.mp-cancel:hover{background:#f5f5f5}
+.mp-close{padding:6px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#888;font-size:12px;cursor:pointer}
+.mp-close:hover{background:#f5f5f5}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -309,9 +315,39 @@ function openMemoPopup(name, side){
   const key=sanitizeKey(getMemoKey(name,side));
   const memo=memoStore[key]||'';
   document.getElementById('popup-hospital').textContent=name;
-  document.getElementById('popup-textarea').value=memo;
+  // 뷰 모드로 열기
+  const viewBody=document.getElementById('popup-view-body');
+  const textarea=document.getElementById('popup-textarea');
+  const editBtn=document.getElementById('popup-edit-btn');
+  const saveBtn=document.getElementById('popup-save-btn');
+  if(memo){
+    viewBody.className='mp-view-body';
+    viewBody.textContent=memo;
+  } else {
+    viewBody.className='mp-view-empty';
+    viewBody.textContent='메모 없음';
+  }
+  viewBody.style.display='';
+  textarea.classList.remove('active');
+  textarea.value=memo;
+  editBtn.style.display='';
+  saveBtn.classList.remove('active');
   document.getElementById('memo-popup-overlay').classList.add('open');
-  document.getElementById('popup-textarea').focus();
+}
+
+function switchToEditMode(){
+  const viewBody=document.getElementById('popup-view-body');
+  const textarea=document.getElementById('popup-textarea');
+  const editBtn=document.getElementById('popup-edit-btn');
+  const saveBtn=document.getElementById('popup-save-btn');
+  viewBody.style.display='none';
+  textarea.classList.add('active');
+  editBtn.style.display='none';
+  saveBtn.classList.add('active');
+  textarea.focus();
+  // 커서를 끝으로
+  const len=textarea.value.length;
+  textarea.setSelectionRange(len,len);
 }
 
 function closeMemoPopup(){
@@ -408,10 +444,12 @@ loadMemos().then(()=>{ render(); }).catch(()=>{ render(); });
       <span id="popup-hospital">병원명</span>
       <button class="mp-close-x" onclick="closeMemoPopup()">✕</button>
     </div>
+    <div id="popup-view-body" class="mp-view-body"></div>
     <textarea class="mp-textarea" id="popup-textarea" rows="4" placeholder="메모를 입력하세요..."></textarea>
     <div class="mp-btns">
-      <button class="mp-save" onclick="saveMemoPopup()">저장</button>
-      <button class="mp-cancel" onclick="closeMemoPopup()">닫기</button>
+      <button class="mp-edit-btn" id="popup-edit-btn" onclick="switchToEditMode()">수정</button>
+      <button class="mp-save" id="popup-save-btn" onclick="saveMemoPopup()">저장</button>
+      <button class="mp-close" onclick="closeMemoPopup()">닫기</button>
     </div>
   </div>
 </div>
