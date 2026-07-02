@@ -92,10 +92,7 @@ tbody tr:hover td{background:#fafbff}
 <div class="header">
   <div class="hicon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 3H7C5.9 3 5 3.9 5 5v16l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="#fff"/></svg></div>
   <h1>26-3차 병원 인수인계</h1>
-  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-    <button onclick="exportMemos()" style="padding:5px 12px;border-radius:8px;border:1.5px solid #6c63ff;background:#fff;color:#6c63ff;font-size:12px;font-weight:600;cursor:pointer">💾 메모 내보내기</button>
-    <label style="padding:5px 12px;border-radius:8px;border:1.5px solid #e0e0e0;background:#fff;color:#555;font-size:12px;font-weight:600;cursor:pointer">📂 메모 가져오기<input type="file" accept=".json" onchange="importMemos(event)" style="display:none"></label>
-  </div>
+
 </div>
 <div class="main">
   <div id="dash">
@@ -380,38 +377,7 @@ async function saveMemoPopup(){
 
 // saveMemo replaced by saveMemoPopup
 
-function exportMemos(){
-  const data = JSON.stringify(memoStore, null, 2);
-  const blob = new Blob([data], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = '병원_메모_' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
-async function importMemos(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = async function(e){
-    try{
-      const parsed = JSON.parse(e.target.result);
-      // Firebase에 일괄 업로드
-      if(_fbReady){
-        await _db.ref('memos').update(parsed);
-      }
-      Object.assign(memoStore, parsed);
-      render();
-      showSaveBadge('✅ 메모 가져오기 완료 ('+Object.keys(parsed).length+'개)');
-    }catch(err){
-      alert('메모 파일을 읽을 수 없습니다.');
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
 
 function showSaveBadge(msg){
   let badge = document.getElementById('save-badge');
